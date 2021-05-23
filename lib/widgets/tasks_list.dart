@@ -1,28 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todoey_flutter/widgets/task_tile.dart';
+import 'package:todoey_flutter/model/task_data.dart';
 import 'package:provider/provider.dart';
-import 'package:todoey_flutter/models/task_data.dart';
 
-class TasksList extends StatelessWidget {
+class TasksList extends StatefulWidget {
+  @override
+  _TasksListState createState() => _TasksListState();
+}
+
+class _TasksListState extends State<TasksList> {
+  SharedPreferences sharedPreferences;
+  @override
+  void initState() {
+    initSharedPreferences();
+    super.initState();
+  }
+
+  void initSharedPreferences() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskData>(
-      builder: (context, taskData, child) {
+      builder: (context, task_data, child) {
         return ListView.builder(
+          itemCount: task_data.tasks.length,
           itemBuilder: (context, index) {
-            final task = taskData.tasks[index];
             return TaskTile(
-              taskTitle: task.name,
-              isChecked: task.isDone,
-              checkboxCallback: (checkboxState) {
-                taskData.updateTask(task);
+              taskTitile: task_data.tasks[index].name,
+              //isChecked: Provider.of<TaskData>(context).tasks[index].isDone,
+              //Provider.of<TaskData>(context).tasks = task_data. we would use LHS when we did not wrap with Consumer
+              isChecked: task_data.tasks[index].isDone,
+              checkBoxCallback: (bool checkboxState) {
+                task_data.updateTask(task_data.tasks[index]);
+                // setState(() {
+                //   widget.Provider.of<TaskData>(context).tasks[index].toggleDone();
+                // });
               },
               longPressCallback: () {
-                taskData.deleteTask(task);
+                task_data.deleteTask(task_data.tasks[index]);
+                HapticFeedback.heavyImpact();
               },
             );
           },
-          itemCount: taskData.taskCount,
         );
       },
     );
