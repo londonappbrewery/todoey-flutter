@@ -22,9 +22,20 @@ class _TasksListState extends State<TasksList> {
     sharedPreferences = await SharedPreferences.getInstance();
   }
 
+  SnackBar snackBar(TaskData taskData) => SnackBar(
+        content: Text('You delted a task'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            taskData.retrieveTask();
+          },
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskData>(
+      //TODO NOTES
       builder: (context, task_data, child) {
         return ListView.builder(
           itemCount: task_data.tasks.length,
@@ -41,6 +52,7 @@ class _TasksListState extends State<TasksList> {
                 // });
               },
               longPressCallback: () {
+                ScaffoldMessenger.of(context).showSnackBar(snackBar(task_data));
                 task_data.deleteTask(task_data.tasks[index]);
                 HapticFeedback.heavyImpact();
               },
